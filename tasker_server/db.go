@@ -18,7 +18,7 @@ const (
 
 
 func init() {
-	if err := os.Mkdir("./db", os.ModePerm | os.ModeAppend |); os.IsExist(err)  {
+	if err := os.Mkdir("./db", os.ModePerm | os.ModeAppend ); os.IsExist(err)  {
 		log.Println("Dir exsist")
 	} else if err != nil {
 		panic(err)
