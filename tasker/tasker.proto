@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+service Tasker {
+    // create task and answer with TaskResponse
+    rpc CreateTask (TaskRequest) returns (TaskResponse);
+
+    // Mark task done/not done
+    rpc MarkTask (MarkRequest) returns (TaskResponse);
+
+    // Move task to archive
+    rpc ArchiveTask (ArchiveRequest) returns (TaskResponse);
+    // Get task may be with filters
+    rpc GetTask (GetTaskRequest) returns (GetTaskResponse);
+
+    rpc GetAllTasks(GetAllTaskRequest) returns (GetTaskResponse);
+}
+
+message Task {
+    string ID = 1;
+    string UID = 2;
+    string name = 3;
+    string description = 4;
+    string creates_time = 5;
+    bool done = 6;
+}
+
+message TaskRequest {
+    string name = 2;
+    string description = 3;
+    string creates_time = 4;
+    string token = 5;
+}
+
+message TaskResponse {
+    string error = 1;
+}
+
+message MarkRequest {
+    string ID = 1;
+    string token = 2;
+    bool done = 3;
+}
+
+message ArchiveRequest {
+    string ID = 1;
+    string token = 2;
+}
+
+message GetTaskRequest {
+    string id = 1;
+    string token = 2;
+    string name = 3;
+    string description = 4;
+    string filer = 5;
+}
+
+message GetAllTaskRequest {
+    string token = 1;
+}
+
+message GetTaskResponse {
+    repeated Task task = 1;
+    string error = 2;
+}
+
+
+
