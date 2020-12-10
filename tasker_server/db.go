@@ -1,11 +1,14 @@
 package taskerserver
 
 import (
-	"regexp"
-	"io/ioutil"
-	"fmt"
 	"database/sql"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"path/filepath"
+	"regexp"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -15,6 +18,12 @@ const (
 
 
 func init() {
+	if err := os.Mkdir("./db", os.ModePerm | os.ModeAppend |); os.IsExist(err)  {
+		log.Println("Dir exsist")
+	} else if err != nil {
+		panic(err)
+	}
+
 	path, _ := filepath.Abs("./tasker_server/db/")
 
 	if err := ReadAllSQLScripts(path, dbName); err != nil {
