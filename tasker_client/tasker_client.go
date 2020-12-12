@@ -23,7 +23,7 @@ type Config struct {
 	Port string `json:"port"`
 }
 
-func middlewareTasker(conf Config) mux.MiddlewareFunc {
+func MiddlewareTasker(conf Config) mux.MiddlewareFunc {
 	return (func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			conn, err := grpc.Dial("127.0.0.1"+conf.Port, []grpc.DialOption{grpc.WithInsecure()}...)
@@ -71,7 +71,7 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(err)
 	}
-	
+
 	log.Info("Error: ",resp.Error)
 	log.Info("err: ", err)
 	if data, err := json.Marshal(resp); err != nil {
@@ -220,7 +220,8 @@ func NewTaskerRouter(conf Config) *mux.Router {
 	r.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello"))
 	})
-	r.Use(middlewareTasker(conf))
+	
+	r.Use(MiddlewareTasker(conf))
 
 	return r
 }
