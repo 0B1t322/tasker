@@ -71,7 +71,9 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(err)
 	}
-
+	
+	log.Info("Error: ",resp.Error)
+	log.Info("err: ", err)
 	if data, err := json.Marshal(resp); err != nil {
 		log.Error(err)
 	} else {
