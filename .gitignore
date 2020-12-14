@@ -1,2 +1,3 @@
 start
-./db
+./db/tasker_server.db
+/db
