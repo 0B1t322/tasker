@@ -21,6 +21,7 @@ var (
 	ErrTaskNotExsist	=		errors.New("Task is not exsist")
 	ErrUknowUser 		= 		errors.New("Uknown user")
 	ErrInternalServer 	=		errors.New("Server internal error")
+	ErrNil				= 		errors.New("")
 )
 
 // TaskerServer .....
@@ -157,6 +158,7 @@ func (ts *TaskerServer) CreateTask(
 	
 	db, err := ConnectToDB()
 	if err != nil {
+		log.Error(err)
 		return &pb.TaskResponse{Error: ErrInternalServer.Error()}, err
 	}
 	defer db.Close()
@@ -165,6 +167,7 @@ func (ts *TaskerServer) CreateTask(
 	if id, err := getUserIDByToken(context.WithValue(ctx,"db", db), req.Token); err == sql.ErrNoRows {
 		return &pb.TaskResponse{Error: ErrUknowUser.Error()}, nil
 	} else if err != nil {
+		log.Error(err)
 		return &pb.TaskResponse{Error: ErrInternalServer.Error()}, err
 	} else {
 		UID = id
@@ -175,11 +178,13 @@ func (ts *TaskerServer) CreateTask(
 	if err != sql.ErrNoRows{
 		createDate, errTime := time.Parse(time.Stamp, task.CreatesTime)
 		if errTime != nil {
-			return &pb.TaskResponse{Error: ErrInternalServer.Error()}, err
+			log.Error(errTime)
+			return &pb.TaskResponse{Error: ErrInternalServer.Error()}, errTime
 		}
 
 		if after :=	time.Now().AddDate(0,0,-1).Add(-time.Minute); !createDate.After(after) {
-				return &pb.TaskResponse{Error: "Task exsist"}, nil
+				log.Error(ErrTaskExsist)
+				return &pb.TaskResponse{Error: ErrTaskExsist.Error()}, nil
 		}
 	} else if err != nil && err != sql.ErrNoRows {
 		return &pb.TaskResponse{Error: ErrInternalServer.Error()}, err
@@ -188,10 +193,11 @@ func (ts *TaskerServer) CreateTask(
 	if _, err := db.Exec("insert into tasks (user_id, name, description, create_time, done) values ($1, $2, $3, $4, $5)", 
 			UID, req.Name, req.Description, req.CreatesTime, false,
 	); err != nil {
+		log.Error(err)
 		return &pb.TaskResponse{Error: ErrInternalServer.Error()}, err
 	}
 
-	return &pb.TaskResponse{Error: ""}, nil
+	return &pb.TaskResponse{Error: ErrNil.Error()}, nil
 }
 
 
@@ -226,7 +232,7 @@ func (ts *TaskerServer) MarkTask(
 			return &pb.TaskResponse{Error: ErrTaskNotExsist.Error()}, nil
 		}
 
-		return &pb.TaskResponse{Error: ""}, nil
+		return &pb.TaskResponse{Error: ErrNil.Error()}, nil
 }
 
 // GetAllTasks ....
@@ -247,9 +253,9 @@ func (ts *TaskerServer) GetAllTasks(
 		dbCtx := context.WithValue(ctx, "db", db)
 		uid, err := getUserIDByToken(dbCtx, req.Token)
 		switch err {
-			case ErrUknowUser:
+			case sql.ErrNoRows:
 				return &pb.GetTaskResponse{
-					Task: nil,
+					Task: []*pb.Task{},
 					Error: ErrUknowUser.Error(),
 				}, nil
 
@@ -257,7 +263,7 @@ func (ts *TaskerServer) GetAllTasks(
 
 			default:
 				return &pb.GetTaskResponse{
-					Task: nil,
+					Task: []*pb.Task{},
 					Error: ErrInternalServer.Error(),
 				}, err
 		}
@@ -265,14 +271,14 @@ func (ts *TaskerServer) GetAllTasks(
 		tasks, err := getTasksByUID(dbCtx, uid)
 		if err != nil {
 			return &pb.GetTaskResponse{
-				Task: nil,
+				Task: []*pb.Task{},
 				Error: ErrInternalServer.Error(),
 			}, err
 		}
 
 		return &pb.GetTaskResponse{
 			Task: tasks,
-			Error: "",
+			Error: ErrNil.Error(),
 		}, nil
 		
 }

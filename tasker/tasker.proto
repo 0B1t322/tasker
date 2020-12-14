@@ -47,10 +47,7 @@ message ArchiveRequest {
 }
 
 message GetTaskRequest {
-    string id = 1;
     string token = 2;
-    string name = 3;
-    string description = 4;
     string filer = 5;
 }
 
